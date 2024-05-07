@@ -1,9 +1,12 @@
 <script>
 import axios from "axios";
+import { state } from './state.js';
+
 import Search from "./components/Search.vue";
 import Currency from "./components/Currency.vue";
 
 export default {
+  emit: ['getConvertion'],
   components: {
     Search,
     Currency,
@@ -11,11 +14,10 @@ export default {
 
   data() {
     return {
+      state,
       baseUrl: "https://api.frankfurter.app/latest",
       amount: 1,
-      from: 'EUR',
-      to: 'USD',
-      currencyResult: {}, 
+      currencyResult: {},
       currencies: {},
     }
   },
@@ -23,38 +25,57 @@ export default {
   methods: {
     getCurrencies() {
       axios.get('https://api.frankfurter.app/currencies')
-        .then( res => {
+        .then(res => {
           this.currencies = res.data;
+        })
+        .catch(err => {
+          console.error(err.message);
         })
     },
 
-    getConvertion(amount,from,to) {
-      axios.get(this.baseUrl, { params: {
-        amount: amount,
-        from: from,
-        to: to
-      }}) 
-        .then( res => {
+    getConvertion(amount, from, to, inputNumber) {
+
+      console.log(amount, from, to);
+
+      axios.get(this.baseUrl, {
+        params: {
+          amount: amount,
+          from: from,
+          to: to
+        }
+      })
+        .then(res => {
+
+
           this.currencyResult = res.data;
 
           const rates = Object.entries(this.currencyResult.rates);
 
-          // rates.forEach((currency, key) => {
-          //   console.log(currency[0], currency[1]);
-          // });
-          
-          for (const [key, value] of Object.entries(this.currencyResult.rates)) {
+          for (const [key, value] of rates) {
             this.currencyResult['baseFinal'] = key;
             this.currencyResult['amountFinal'] = value;
           }
+
+          if (inputNumber === 1) {
+            this.state.currencyToSearch_1 = res.data.amount
+            this.state.currencyToSearch_2 = res.data.amountFinal
+          } else {
+            this.state.currencyToSearch_2 = res.data.amount
+            this.state.currencyToSearch_1 = res.data.amountFinal
+          }
+
+
         })
-    }  
+        .catch(err => {
+          console.error(err.message);
+        })
+    }
 
   },
 
   mounted() {
-    this.getCurrencies(); 
-    this.getConvertion(1, 'EUR', 'USD');
+    this.getCurrencies();
+    this.getConvertion(1, this.state.fromKey, this.state.toKey, 1);
   },
 }
 
@@ -72,8 +93,7 @@ export default {
     </div>
 
     <div class="d-flex flex-column gap-3">
-      <Search :currencies="this.currencies" />
-      <Search :currencies="this.currencies" />
+      <Search :currencies="this.currencies" v-for="n in 2" :inputNumber="n" @getConvertion="getConvertion" />
     </div>
 
   </div>
@@ -83,7 +103,6 @@ export default {
 
 
 <style lang="scss">
-
 .my-container {
   max-width: 1000px;
   width: 70%;
@@ -93,5 +112,4 @@ export default {
   border-radius: 40px;
   padding: 50px;
 }
-
 </style>
