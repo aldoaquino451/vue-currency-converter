@@ -22,6 +22,7 @@ https://www.frankfurter.app/docs/
 
 lista currencies https://api.frankfurter.app/currencies
 chiamata axios https://api.frankfurter.app/latest?amount=2&from=EUR&to=USD
+data chart https://api.frankfurter.app/2023-01-01..?from=AUD&to=USD
 
 #### 1
 la chiamata axios dentro app
