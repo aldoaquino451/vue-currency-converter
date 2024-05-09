@@ -9,6 +9,19 @@ export default {
   },
 
   computed: {
+    currencyCode() {
+      const currency =
+        this.position === "up" ? this.data.up.currency : this.data.down.currency;
+
+      const amountCurrency = new Intl.NumberFormat("it-IT", {
+        style: "currency",
+        currency: currency,
+      });
+
+      const result = amountCurrency.format(1);
+      return result.split(/\s/g)[1];
+    },
+
     disabled() {
       return this.position === "up" ? "down" : "up";
     },
@@ -17,7 +30,7 @@ export default {
 </script>
 
 <template>
-  <div class="d-flex gap-3">
+  <div class="d-flex gap-3 flex-column flex-md-row">
     <div class="input-group">
       <input
         v-model="data[position].amount"
@@ -30,7 +43,9 @@ export default {
         min="0.0001"
         class="form-control"
       />
-      <span class="input-group-text">$</span>
+      <span class="input-group-text currencyCode d-flex justify-content-center">{{
+        currencyCode
+      }}</span>
     </div>
 
     <select
@@ -49,4 +64,8 @@ export default {
   </div>
 </template>
 
-<style lang="scss" scoped></style>
+<style lang="scss" scoped>
+.currencyCode {
+  width: 60px;
+}
+</style>
