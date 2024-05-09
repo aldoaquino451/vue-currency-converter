@@ -15,8 +15,8 @@ export default {
       baseUrl: "https://api.frankfurter.app/",
       currencies: {},
       data: {
-        up: { amount: null, currency: "" },
-        down: { amount: null, currency: "" },
+        up: { amount: null, currency: "EUR" },
+        down: { amount: null, currency: "USD" },
         result: { small: "up", large: "down" },
       },
       dataChart: { from: "", to: "", dates: [], values: [] },
@@ -55,7 +55,7 @@ export default {
         title: {
           text: `Rapporto fra ${this.dataChart.from} e ${this.dataChart.to} nell'ultimo mese`,
           align: "center",
-          margin: 10,
+          margin: 60,
           offsetX: 0,
           offsetY: 0,
           floating: true,
@@ -103,7 +103,6 @@ export default {
             this.dataChart.dates.push(dateFormatted);
             this.dataChart.values.push(el[1][to]);
           });
-          console.log(this.dataChart);
 
           this.getChart();
         });
@@ -137,15 +136,11 @@ export default {
             small: position,
             large: position === "up" ? "down" : "up",
           };
-
-          console.log(from["currency"], to["currency"]);
-          // this.getDataChart(from["currency"], to["currency"]);
         });
     },
 
     search(amount, currency, position) {
       clearTimeout(this.timeOut);
-      console.log(this.timeOut);
 
       this.timeOut = setTimeout(() => {
         if (position === "up") {
@@ -156,8 +151,6 @@ export default {
           this.getDataChart(currency, this.data.up.currency);
         }
       }, 300);
-
-      console.log(this.timeOut);
     },
   },
   created() {
@@ -194,7 +187,7 @@ export default {
 .my-container {
   max-width: 1000px;
   width: 90%;
-  margin: 150px auto;
+  margin: 0 auto;
   min-height: 500px;
   border: 1px solid black;
   border-radius: 40px;
@@ -203,5 +196,19 @@ export default {
 
 #chart {
   margin-top: 50px;
+}
+
+@media screen and (max-width: 767px) {
+  .my-container {
+    width: 100%;
+    min-height: 500px;
+    border: 0;
+    padding: 40px 20px;
+  }
+  #chart {
+    margin-top: 50px;
+    scale: 1.03;
+    transform: translateX(-1%);
+  }
 }
 </style>

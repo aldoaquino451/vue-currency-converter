@@ -4,8 +4,25 @@ body {
   font-family: "Space Grotesk", sans-serif;
   font-optical-sizing: auto;
   font-style: normal;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background-color: #eee;
+}
+
+#app {
+  background-color: white;
+  flex-grow: 1;
+  padding: 100px 0;
+  display: flex;
 }
 
 [id^="SvgjsTspan"] {
   text-transform: capitalize;
+}
+
+@media screen and (max-width: 767px) {
+  #app {
+    padding: 0;
+  }
 }
