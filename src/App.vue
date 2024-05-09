@@ -2,14 +2,14 @@
 import axios from "axios";
 import Search from "./components/Search.vue";
 import Result from "./components/Result.vue";
-import Chart from "./components/Chart.vue";
+import ApexCharts from "apexcharts";
 
 export default {
   components: {
     Search,
     Result,
-    Chart,
   },
+
   data() {
     return {
       baseUrl: "https://api.frankfurter.app/",
@@ -20,9 +20,62 @@ export default {
         result: { small: "up", large: "down" },
       },
       dataChart: { from: "", to: "", dates: [], values: [] },
+      timeOut: null,
     };
   },
+
   methods: {
+    getChart() {
+      const chart = document.querySelector("#chart");
+      chart.innerHTML = null;
+
+      const options = {
+        chart: {
+          height: 280,
+          type: "area",
+        },
+        dataLabels: {
+          enabled: false,
+        },
+        series: [
+          {
+            name: "Series 1",
+            data: this.dataChart.values,
+          },
+        ],
+        fill: {
+          type: "gradient",
+          gradient: {
+            shadeIntensity: 1,
+            opacityFrom: 0.7,
+            opacityTo: 0.9,
+            stops: [0, 90, 100],
+          },
+        },
+        title: {
+          text: `Rapporto fra ${this.dataChart.from} e ${this.dataChart.to} nell'ultimo mese`,
+          align: "center",
+          margin: 10,
+          offsetX: 0,
+          offsetY: 0,
+          floating: true,
+          style: {
+            fontSize: "14px",
+            fontWeight: "bold",
+            fontFamily: "Space Grotesk",
+            color: "#263238",
+          },
+        },
+        xaxis: {
+          categories: this.dataChart.dates,
+        },
+      };
+
+      const chartObj = new ApexCharts(chart, options);
+
+      chartObj.render();
+    },
+
     getDataChart(from, to) {
       let lastMonth = new Date();
       lastMonth.setMonth(lastMonth.getMonth() - 1);
@@ -31,25 +84,29 @@ export default {
       lastMonth = lastMonth.map((el) => el.padStart(2, "0")).join("-");
       const date = lastMonth + "..";
 
-      axios.get(this.baseUrl + date, { params: { from: from, to: to } }).then((res) => {
-        this.dataChart["from"] = from;
-        this.dataChart["to"] = to;
+      axios
+        .get(this.baseUrl + date, { params: { amount: 1, from: from, to: to } })
+        .then((res) => {
+          this.dataChart["from"] = from;
+          this.dataChart["to"] = to;
 
-        this.dataChart.dates = [];
-        this.dataChart.values = [];
+          this.dataChart.dates = [];
+          this.dataChart.values = [];
 
-        Object.entries(res.data.rates).forEach((el) => {
-          const newDate = new Date(el[0]);
-          const dateFormatted = newDate.toLocaleDateString("it-IT", {
-            month: "short",
-            day: "numeric",
+          Object.entries(res.data.rates).forEach((el) => {
+            const newDate = new Date(el[0]);
+            const dateFormatted = newDate.toLocaleDateString("it-IT", {
+              month: "short",
+              day: "numeric",
+            });
+
+            this.dataChart.dates.push(dateFormatted);
+            this.dataChart.values.push(el[1][to]);
           });
+          console.log(this.dataChart);
 
-          this.dataChart.dates.push(dateFormatted);
-          this.dataChart.values.push(el[1][to]);
+          this.getChart();
         });
-        console.log(this.dataChart);
-      });
     },
 
     getCurrencies() {
@@ -80,16 +137,27 @@ export default {
             small: position,
             large: position === "up" ? "down" : "up",
           };
+
+          console.log(from["currency"], to["currency"]);
+          // this.getDataChart(from["currency"], to["currency"]);
         });
     },
+
     search(amount, currency, position) {
-      if (position === "up") {
-        this.getConvertion(amount, currency, this.data.down.currency, position);
-        this.getDataChart(currency, this.data.down.currency);
-      } else {
-        this.getConvertion(amount, currency, this.data.up.currency, position);
-        this.getDataChart(currency, this.data.up.currency);
-      }
+      clearTimeout(this.timeOut);
+      console.log(this.timeOut);
+
+      this.timeOut = setTimeout(() => {
+        if (position === "up") {
+          this.getConvertion(amount, currency, this.data.down.currency, position);
+          this.getDataChart(currency, this.data.down.currency);
+        } else {
+          this.getConvertion(amount, currency, this.data.up.currency, position);
+          this.getDataChart(currency, this.data.up.currency);
+        }
+      }, 300);
+
+      console.log(this.timeOut);
     },
   },
   created() {
@@ -117,7 +185,7 @@ export default {
     </div>
 
     <div style="min-height: 300px">
-      <Chart :data="this.dataChart" />
+      <div id="chart"></div>
     </div>
   </div>
 </template>
@@ -131,5 +199,9 @@ export default {
   border: 1px solid black;
   border-radius: 40px;
   padding: 50px;
+}
+
+#chart {
+  margin-top: 50px;
 }
 </style>
