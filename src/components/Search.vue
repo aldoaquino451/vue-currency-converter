@@ -22,8 +22,12 @@ export default {
       <input
         v-model="data[position].amount"
         @keyup="$emit('search', data[position].amount, data[position].currency, position)"
+        @change="
+          $emit('search', data[position].amount, data[position].currency, position)
+        "
         type="number"
         step="0.0001"
+        min="0.0001"
         class="form-control"
       />
       <span class="input-group-text">$</span>
