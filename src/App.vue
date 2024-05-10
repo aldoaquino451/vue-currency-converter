@@ -30,9 +30,31 @@ export default {
       chart.innerHTML = null;
 
       const options = {
+        colors: ["#fff"],
+
+        x: {
+          show: true,
+          format: "dd MMM",
+          formatter: undefined,
+        },
+        theme: {
+          mode: "dark",
+          palette: "palette9",
+          monochrome: {
+            enabled: true,
+            color: "#ffffff",
+            shadeTo: "light",
+            shadeIntensity: 0.8,
+          },
+        },
         chart: {
-          height: 280,
+          height: "auto",
           type: "area",
+          fontFamily: "Space Grotesk, Arial, sans-serif",
+          redrawOnParentResize: true,
+          offsetX: -5,
+          offsetY: 10,
+          width: "95%",
         },
         dataLabels: {
           enabled: false,
@@ -63,7 +85,7 @@ export default {
             fontSize: "14px",
             fontWeight: "bold",
             fontFamily: "Space Grotesk",
-            color: "#263238",
+            color: "#d4d4d4",
           },
         },
         xaxis: {
@@ -77,6 +99,8 @@ export default {
     },
 
     getDataChart(from, to) {
+      if (this.dataChart.from === from) return;
+
       let lastMonth = new Date();
       lastMonth.setMonth(lastMonth.getMonth() - 1);
       lastMonth = lastMonth.toLocaleDateString("us-US");
@@ -177,9 +201,7 @@ export default {
       />
     </div>
 
-    <div style="min-height: 300px">
-      <div id="chart"></div>
-    </div>
+    <div id="chart"></div>
   </div>
 </template>
 
@@ -189,13 +211,19 @@ export default {
   width: 90%;
   margin: 0 auto;
   min-height: 500px;
-  border: 1px solid black;
   border-radius: 40px;
   padding: 50px;
+  background-color: #252525;
 }
 
 #chart {
   margin-top: 50px;
+  color: #d4d4d4;
+  display: flex;
+  justify-content: center;
+  background-color: #424242;
+  border-radius: 40px;
+  padding: 20px 0;
 }
 
 @media screen and (max-width: 767px) {
@@ -203,12 +231,13 @@ export default {
     width: 100%;
     min-height: 500px;
     border: 0;
+    border-radius: 0;
     padding: 40px 20px;
   }
+
   #chart {
-    margin-top: 50px;
-    scale: 1.03;
-    transform: translateX(-1%);
+    border-radius: 10px;
+    padding: 15px 0;
   }
 }
 </style>
