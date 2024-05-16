@@ -30,8 +30,8 @@ export default {
 };
 </script>
 <template>
-  <div class="mb-4">
-    <p class="small">
+  <div class="mb-3 mb-md-4">
+    <p class="small mb-0 mb-md-3">
       <span> {{ small }} </span>
       è uguale a:
     </p>

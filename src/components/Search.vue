@@ -39,8 +39,6 @@ export default {
           $emit('search', data[position].amount, data[position].currency, position)
         "
         type="number"
-        step="0.0001"
-        min="0.0001"
         class="form-control"
       />
       <span class="input-group-text currencyCode d-flex justify-content-center">{{

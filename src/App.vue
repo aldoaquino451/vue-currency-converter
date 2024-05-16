@@ -101,12 +101,18 @@ export default {
     getDataChart(from, to) {
       if (this.dataChart.from === from) return;
 
-      let lastMonth = new Date();
-      lastMonth.setMonth(lastMonth.getMonth() - 1);
-      lastMonth = lastMonth.toLocaleDateString("us-US");
-      lastMonth = lastMonth.split("/").reverse();
-      lastMonth = lastMonth.map((el) => el.padStart(2, "0")).join("-");
-      const date = lastMonth + "..";
+      // let lastMonth = new Date();
+      // lastMonth.setMonth(lastMonth.getMonth() - 1);
+      // lastMonth = lastMonth.toLocaleDateString("us-US");
+      // lastMonth = lastMonth.split("/").reverse();
+      // lastMonth = lastMonth.map((el) => el.padStart(2, "0")).join("-");
+      // const date = lastMonth + "..";
+      let lastWeek = new Date();
+      lastWeek.setDate(lastWeek.getDate() - 7);
+      lastWeek = lastWeek.toLocaleDateString("us-US");
+      lastWeek = lastWeek.split("/").reverse();
+      lastWeek = lastWeek.map((el) => el.padStart(2, "0")).join("-");
+      const date = lastWeek + "..";
 
       axios
         .get(this.baseUrl + date, { params: { amount: 1, from: from, to: to } })
@@ -160,6 +166,7 @@ export default {
             small: position,
             large: position === "up" ? "down" : "up",
           };
+          console.log(this.data);
         });
     },
 
