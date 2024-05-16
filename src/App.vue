@@ -107,6 +107,7 @@ export default {
       // lastMonth = lastMonth.split("/").reverse();
       // lastMonth = lastMonth.map((el) => el.padStart(2, "0")).join("-");
       // const date = lastMonth + "..";
+
       let lastWeek = new Date();
       lastWeek.setDate(lastWeek.getDate() - 7);
       lastWeek = lastWeek.toLocaleDateString("us-US");
