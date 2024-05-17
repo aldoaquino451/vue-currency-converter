@@ -31,7 +31,7 @@ export default {
 </script>
 <template>
   <div class="mb-3 mb-md-4">
-    <p class="small mb-0 mb-md-3">
+    <p class="small mb-0 mb-md-2">
       <span> {{ small }} </span>
       è uguale a:
     </p>
@@ -44,6 +44,6 @@ export default {
 }
 
 .large {
-  font-size: 1.6em;
+  font-size: 1.8em;
 }
 </style>

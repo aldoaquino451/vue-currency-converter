@@ -25,21 +25,26 @@ export default {
     disabled() {
       return this.position === "up" ? "down" : "up";
     },
+
+    isActive() {
+      return this.data.result.small == this.position;
+    },
   },
 };
 </script>
 
 <template>
-  <div class="d-flex gap-3 flex-column flex-md-row">
-    <div class="input-group">
+  <div class="d-flex gap-2 gap-md-3 flex-column flex-md-row">
+    <div class="input-group input-box" :class="isActive ? 'active' : ''">
       <input
         v-model="data[position].amount"
-        @keyup="$emit('search', data[position].amount, data[position].currency, position)"
-        @change="
-          $emit('search', data[position].amount, data[position].currency, position)
+        @keyup="
+          $emit('search', data[position].amount, data[position].currency, position, false)
         "
         type="number"
         class="form-control"
+        step="0.0001"
+        min="0.0001"
       />
       <span class="input-group-text currencyCode d-flex justify-content-center">{{
         currencyCode
@@ -48,7 +53,9 @@ export default {
 
     <select
       v-model="data[position].currency"
-      @change="$emit('search', data[position].amount, data[position].currency, position)"
+      @change="
+        $emit('search', data[position].amount, data[position].currency, position, true)
+      "
       class="form-select"
     >
       <option
@@ -65,5 +72,25 @@ export default {
 <style lang="scss" scoped>
 .currencyCode {
   width: 60px;
+}
+
+.input-box {
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+input:focus,
+select:focus {
+  box-shadow: none;
+  border: none;
+}
+
+input:focus-visible,
+select:focus-visible {
+  outline: none;
+}
+
+.active {
+  box-shadow: 0px 0px 3px 3px rgba(255, 255, 255, 0.4);
 }
 </style>
