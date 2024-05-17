@@ -19,13 +19,18 @@ export default {
         down: { amount: null, currency: "USD" },
         result: { small: "up", large: "down" },
       },
-      dataChart: { from: "", to: "", dates: [], values: [] },
+      dataChart: { from: null, to: null, dates: [], values: [] },
       timeOut: null,
+      windowWidth: window.innerWidth,
     };
   },
 
   methods: {
-    getChart() {
+    getChart(dataChart) {
+      console.log("getChart");
+      console.log(this.dataChart.values);
+      console.log(this.dataChart.dates);
+
       const chart = document.querySelector("#chart");
       chart.innerHTML = null;
 
@@ -62,7 +67,7 @@ export default {
         series: [
           {
             name: "Series 1",
-            data: this.dataChart.values,
+            data: dataChart.values,
           },
         ],
         fill: {
@@ -75,7 +80,8 @@ export default {
           },
         },
         title: {
-          text: `Rapporto fra ${this.dataChart.from} e ${this.dataChart.to} nell'ultimo mese`,
+          text:
+            "Rapporto fra " + dataChart.from + " e " + dataChart.to + " nell'ultimo mese",
           align: "center",
           margin: 60,
           offsetX: 0,
@@ -89,7 +95,7 @@ export default {
           },
         },
         xaxis: {
-          categories: this.dataChart.dates,
+          categories: dataChart.dates,
         },
       };
 
@@ -99,21 +105,14 @@ export default {
     },
 
     getDataChart(from, to) {
-      if (this.dataChart.from === from) return;
+      const now = new Date();
 
-      // let lastMonth = new Date();
-      // lastMonth.setMonth(lastMonth.getMonth() - 1);
-      // lastMonth = lastMonth.toLocaleDateString("us-US");
-      // lastMonth = lastMonth.split("/").reverse();
-      // lastMonth = lastMonth.map((el) => el.padStart(2, "0")).join("-");
-      // const date = lastMonth + "..";
+      if (this.windowWidth >= 768) now.setMonth(now.getMonth() - 1);
+      else now.setDate(now.getDate() - 7);
 
-      let lastWeek = new Date();
-      lastWeek.setDate(lastWeek.getDate() - 7);
-      lastWeek = lastWeek.toLocaleDateString("us-US");
-      lastWeek = lastWeek.split("/").reverse();
-      lastWeek = lastWeek.map((el) => el.padStart(2, "0")).join("-");
-      const date = lastWeek + "..";
+      let date = now.toLocaleDateString("us-US").split("/").reverse();
+      date = date.map((el) => el.padStart(2, "0")).join("-");
+      date = date + "..";
 
       axios
         .get(this.baseUrl + date, { params: { amount: 1, from: from, to: to } })
@@ -135,7 +134,7 @@ export default {
             this.dataChart.values.push(el[1][to]);
           });
 
-          this.getChart();
+          this.getChart(this.dataChart);
         });
     },
 
@@ -167,39 +166,59 @@ export default {
             small: position,
             large: position === "up" ? "down" : "up",
           };
-          console.log(this.data);
         });
     },
 
-    search(amount, currency, position) {
-      clearTimeout(this.timeOut);
+    search(amount, currency, position, isSelect) {
+      if (position === "up" && isSelect) {
+        this.getConvertion(amount, currency, this.data.down.currency, "up");
+        this.getDataChart(currency, this.data.down.currency);
+      } else if (position === "down" && isSelect) {
+        this.getConvertion(this.data.up.amount, this.data.up.currency, currency, "up");
+        this.getDataChart(currency, this.data.up.currency);
+      } else {
+        const positionTemp = position == "up" ? "down" : "up";
+        this.getConvertion(amount, currency, this.data[positionTemp].currency, position);
+        if (position == this.data.result.large)
+          this.getDataChart(currency, this.data[positionTemp].currency);
+      }
+    },
 
-      this.timeOut = setTimeout(() => {
-        if (position === "up") {
-          this.getConvertion(amount, currency, this.data.down.currency, position);
-          this.getDataChart(currency, this.data.down.currency);
-        } else {
-          this.getConvertion(amount, currency, this.data.up.currency, position);
-          this.getDataChart(currency, this.data.up.currency);
-        }
-      }, 300);
+    // handleResize() {
+    //   this.windowWidth = window.innerWidth;
+    // },
+  },
+
+  watch: {
+    windowWidth(newValue, oldValue) {
+      if (oldValue < 768 && newValue >= 768) {
+        this.getDataChart("EUR", "USD");
+      } else if (oldValue >= 768 && newValue < 768) {
+        this.getDataChart("EUR", "USD");
+      }
     },
   },
-  created() {
+
+  mounted() {
+    window.addEventListener("resize", () => (this.windowWidth = window.innerWidth));
     this.getCurrencies();
     this.getConvertion(1, "EUR", "USD", "up");
     this.getDataChart("EUR", "USD");
+  },
+
+  beforeDestroy() {
+    window.removeEventListener("resize", this.handleResize);
   },
 };
 </script>
 
 <template>
   <div class="my-container">
-    <h1 class="text-center">Currency Converter</h1>
+    <h1 class="text-center mb-3 mb-md-2">Currency Converter</h1>
     <div>
       <Result :data="this.data" />
     </div>
-    <div class="d-flex flex-column gap-3">
+    <div class="d-flex flex-column gap-4 gap-md-3">
       <Search
         v-for="n in ['up', 'down']"
         :position="n"
@@ -240,7 +259,7 @@ export default {
     min-height: 500px;
     border: 0;
     border-radius: 0;
-    padding: 40px 20px;
+    padding: 20px 20px 50px;
   }
 
   #chart {
