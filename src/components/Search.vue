@@ -38,7 +38,7 @@ export default {
     <div class="input-group input-box" :class="isActive ? 'active' : ''">
       <input
         v-model="data[position].amount"
-        @keyup="
+        @keyup.prevent="
           $emit('search', data[position].amount, data[position].currency, position, false)
         "
         type="number"
