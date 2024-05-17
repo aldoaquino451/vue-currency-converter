@@ -229,6 +229,7 @@ export default {
     </div>
 
     <div id="chart"></div>
+    <p class="mt-5 text-end">last version</p>
   </div>
 </template>
 
