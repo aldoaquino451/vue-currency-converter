@@ -101,7 +101,9 @@ export default {
     },
 
     getDataChart(from, to) {
-      // if (from === this.data.result.)
+      console.log("datachart: ", this.dataChart.from);
+      console.log("from: ", from);
+      if (this.dataChart.from === from) return;
       const now = new Date();
 
       if (this.windowWidth >= 768) now.setMonth(now.getMonth() - 1);
@@ -176,11 +178,11 @@ export default {
       } else {
         const positionTemp = position == "up" ? "down" : "up";
         this.getConvertion(amount, currency, this.data[positionTemp].currency, position);
-        // if (position == this.data.result.large) {
-        //   this.timeOut = setTimeout(() => {
-        //     this.getDataChart(currency, this.data[positionTemp].currency);
-        //   }, 500);
-        // }
+        if (position == this.data.result.large) {
+          this.timeOut = setTimeout(() => {
+            this.getDataChart(currency, this.data[positionTemp].currency);
+          }, 500);
+        }
       }
     },
   },

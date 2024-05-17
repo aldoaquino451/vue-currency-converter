@@ -48,7 +48,7 @@ export default {
   <div class="d-flex gap-2 gap-md-3 flex-column flex-md-row">
     <div class="input-group input-box" :class="isActive ? 'active' : ''">
       <input
-        v-model="amount"
+        v-model="data[position].amount"
         @keyup="
           $emit('search', data[position].amount, data[position].currency, position, false)
         "
