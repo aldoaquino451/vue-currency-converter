@@ -27,10 +27,6 @@ export default {
 
   methods: {
     getChart(dataChart) {
-      console.log("getChart");
-      console.log(this.dataChart.values);
-      console.log(this.dataChart.dates);
-
       const chart = document.querySelector("#chart");
       chart.innerHTML = null;
 
@@ -105,6 +101,7 @@ export default {
     },
 
     getDataChart(from, to) {
+      // if (from === this.data.result.)
       const now = new Date();
 
       if (this.windowWidth >= 768) now.setMonth(now.getMonth() - 1);
@@ -139,7 +136,7 @@ export default {
     },
 
     getCurrencies() {
-      axios.get("https://api.frankfurter.app/currencies").then((res) => {
+      axios.get(this.baseUrl + "currencies").then((res) => {
         this.currencies = res.data;
       });
     },
@@ -179,14 +176,13 @@ export default {
       } else {
         const positionTemp = position == "up" ? "down" : "up";
         this.getConvertion(amount, currency, this.data[positionTemp].currency, position);
-        if (position == this.data.result.large)
-          this.getDataChart(currency, this.data[positionTemp].currency);
+        // if (position == this.data.result.large) {
+        //   this.timeOut = setTimeout(() => {
+        //     this.getDataChart(currency, this.data[positionTemp].currency);
+        //   }, 500);
+        // }
       }
     },
-
-    // handleResize() {
-    //   this.windowWidth = window.innerWidth;
-    // },
   },
 
   watch: {
@@ -229,7 +225,7 @@ export default {
     </div>
 
     <div id="chart"></div>
-    <p class="mt-5 text-end">last version</p>
+    <p class="mt-5 text-end">new version</p>
   </div>
 </template>
 
