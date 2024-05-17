@@ -224,7 +224,6 @@ export default {
     </div>
 
     <div id="chart"></div>
-    <p class="mt-5 text-end">new version</p>
   </div>
 </template>
 
