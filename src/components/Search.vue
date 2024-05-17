@@ -2,11 +2,6 @@
 export default {
   name: "Search",
 
-  data() {
-    return {
-      amount: "",
-    };
-  },
   props: {
     currencies: Object,
     position: String,
@@ -35,12 +30,6 @@ export default {
       return this.data.result.small == this.position;
     },
   },
-
-  watch: {
-    amount(newValue, oldValue) {
-      console.log("changed");
-    },
-  },
 };
 </script>
 
@@ -48,7 +37,7 @@ export default {
   <div class="d-flex gap-2 gap-md-3 flex-column flex-md-row">
     <div class="input-group input-box" :class="isActive ? 'active' : ''">
       <input
-        v-model="data[position].amount"
+        v-model="amount"
         @keyup="
           $emit('search', data[position].amount, data[position].currency, position, false)
         "

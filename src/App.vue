@@ -101,9 +101,6 @@ export default {
     },
 
     getDataChart(from, to) {
-      console.log("datachart: ", this.dataChart.from);
-      console.log("from: ", from);
-      if (this.dataChart.from === from) return;
       const now = new Date();
 
       if (this.windowWidth >= 768) now.setMonth(now.getMonth() - 1);
@@ -181,7 +178,7 @@ export default {
         if (position == this.data.result.large) {
           this.timeOut = setTimeout(() => {
             this.getDataChart(currency, this.data[positionTemp].currency);
-          }, 500);
+          }, 300);
         }
       }
     },
