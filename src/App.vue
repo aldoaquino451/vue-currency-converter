@@ -2,12 +2,13 @@
 import axios from "axios";
 import Search from "./components/Search.vue";
 import Result from "./components/Result.vue";
-import ApexCharts from "apexcharts";
+import Test from "./components/Test.vue";
 
 export default {
   components: {
     Search,
     Result,
+    Test,
   },
 
   data() {
@@ -19,87 +20,40 @@ export default {
         down: { amount: null, currency: "USD" },
         result: { small: "up", large: "down" },
       },
-      dataChart: { from: null, to: null, dates: [], values: [] },
-      timeOut: null,
-      windowWidth: window.innerWidth,
+      // dataChart: { from: "", to: "", dates: [], values: [] },
+      // windowWidth: window.innerWidth,
     };
   },
 
   methods: {
-    getChart(dataChart) {
-      const chart = document.querySelector("#chart");
-      chart.innerHTML = null;
+    // parte una chiamata api diversa in base al tpo di input e alla componente
+    search(amount, currency, position, isSelect) {
+      if (position == "up") {
+        if (isSelect) {
+          this.getConvertion(amount, currency, this.data.down.currency, "up");
+          // this.getDataChart(currency, this.data.down.currency);
+        }
 
-      const options = {
-        colors: ["#fff"],
+        if (!isSelect) {
+          this.getConvertion(amount, currency, this.data["down"].currency, position);
+          // this.getDataChart(currency, this.data["down"].currency);
+        }
+      }
 
-        x: {
-          show: true,
-          format: "dd MMM",
-          formatter: undefined,
-        },
-        theme: {
-          mode: "dark",
-          palette: "palette9",
-          monochrome: {
-            enabled: true,
-            color: "#ffffff",
-            shadeTo: "light",
-            shadeIntensity: 0.8,
-          },
-        },
-        chart: {
-          height: "auto",
-          type: "area",
-          fontFamily: "Space Grotesk, Arial, sans-serif",
-          redrawOnParentResize: true,
-          offsetX: -5,
-          offsetY: 10,
-          width: "95%",
-        },
-        dataLabels: {
-          enabled: false,
-        },
-        series: [
-          {
-            name: "Series 1",
-            data: dataChart.values,
-          },
-        ],
-        fill: {
-          type: "gradient",
-          gradient: {
-            shadeIntensity: 1,
-            opacityFrom: 0.7,
-            opacityTo: 0.9,
-            stops: [0, 90, 100],
-          },
-        },
-        title: {
-          text:
-            "Rapporto fra " + dataChart.from + " e " + dataChart.to + " nell'ultimo mese",
-          align: "center",
-          margin: 60,
-          offsetX: 0,
-          offsetY: 0,
-          floating: true,
-          style: {
-            fontSize: "14px",
-            fontWeight: "bold",
-            fontFamily: "Space Grotesk",
-            color: "#d4d4d4",
-          },
-        },
-        xaxis: {
-          categories: dataChart.dates,
-        },
-      };
+      if (position == "down") {
+        if (isSelect) {
+          this.getConvertion(this.data.up.amount, this.data.up.currency, currency, "up");
+          // this.getDataChart(currency, this.data.up.currency);
+        }
 
-      const chartObj = new ApexCharts(chart, options);
-
-      chartObj.render();
+        if (!isSelect) {
+          this.getConvertion(amount, currency, this.data["up"].currency, position);
+          // this.getDataChart(currency, this.data["up"].currency);
+        }
+      }
     },
 
+    // ottengo un oggetto con i dati che verrano usati per renderizzare il grafico
     getDataChart(from, to) {
       const now = new Date();
 
@@ -113,8 +67,8 @@ export default {
       axios
         .get(this.baseUrl + date, { params: { amount: 1, from: from, to: to } })
         .then((res) => {
-          this.dataChart["from"] = from;
-          this.dataChart["to"] = to;
+          this.dataChart.from = from;
+          this.dataChart.to = to;
 
           this.dataChart.dates = [];
           this.dataChart.values = [];
@@ -129,17 +83,10 @@ export default {
             this.dataChart.dates.push(dateFormatted);
             this.dataChart.values.push(el[1][to]);
           });
-
-          this.getChart(this.dataChart);
         });
     },
 
-    getCurrencies() {
-      axios.get(this.baseUrl + "currencies").then((res) => {
-        this.currencies = res.data;
-      });
-    },
-
+    // ottengo un oggetto con tutti i dati da stampare dentro Result e Search
     getConvertion(amount, from, to, position) {
       axios
         .get(this.baseUrl + "latest", { params: { amount: amount, from: from, to: to } })
@@ -165,22 +112,11 @@ export default {
         });
     },
 
-    search(amount, currency, position, isSelect) {
-      if (position === "up" && isSelect) {
-        this.getConvertion(amount, currency, this.data.down.currency, "up");
-        this.getDataChart(currency, this.data.down.currency);
-      } else if (position === "down" && isSelect) {
-        this.getConvertion(this.data.up.amount, this.data.up.currency, currency, "up");
-        this.getDataChart(currency, this.data.up.currency);
-      } else {
-        const positionTemp = position == "up" ? "down" : "up";
-        this.getConvertion(amount, currency, this.data[positionTemp].currency, position);
-        if (position == this.data.result.large) {
-          this.timeOut = setTimeout(() => {
-            this.getDataChart(currency, this.data[positionTemp].currency);
-          }, 300);
-        }
-      }
+    // ottengo la lista di monete da stampare nella select
+    getCurrencies() {
+      axios.get(this.baseUrl + "currencies").then((res) => {
+        this.currencies = res.data;
+      });
     },
   },
 
@@ -195,10 +131,10 @@ export default {
   },
 
   mounted() {
-    window.addEventListener("resize", () => (this.windowWidth = window.innerWidth));
+    // window.addEventListener("resize", () => (this.windowWidth = window.innerWidth));
     this.getCurrencies();
     this.getConvertion(1, "EUR", "USD", "up");
-    this.getDataChart("EUR", "USD");
+    // this.getDataChart("EUR", "USD");
   },
 
   beforeDestroy() {
@@ -222,8 +158,10 @@ export default {
         @search="search"
       />
     </div>
-
-    <div id="chart"></div>
+    <!-- <Test
+      :dataChart="this.dataChart"
+      :chartFromTo="this.dataChart.from + '|' + this.dataChart.to"
+    /> -->
   </div>
 </template>
 
@@ -238,16 +176,6 @@ export default {
   background-color: #252525;
 }
 
-#chart {
-  margin-top: 50px;
-  color: #d4d4d4;
-  display: flex;
-  justify-content: center;
-  background-color: #424242;
-  border-radius: 40px;
-  padding: 20px 0;
-}
-
 @media screen and (max-width: 767px) {
   .my-container {
     width: 100%;
@@ -255,11 +183,6 @@ export default {
     border: 0;
     border-radius: 0;
     padding: 20px 20px 50px;
-  }
-
-  #chart {
-    border-radius: 10px;
-    padding: 15px 0;
   }
 }
 </style>
