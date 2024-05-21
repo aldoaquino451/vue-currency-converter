@@ -11,6 +11,8 @@
     "deploy": "gh-pages -d dist"
   },
   "dependencies": {
+    "@fontsource-variable/inter": "^5.0.18",
+    "@fontsource-variable/rubik": "^5.0.22",
     "@popperjs/core": "^2.11.8",
     "apexcharts": "^3.49.0",
     "axios": "^1.6.8",

@@ -2,12 +2,13 @@
 import axios from "axios";
 import Search from "./components/Search.vue";
 import Result from "./components/Result.vue";
-import ApexCharts from "apexcharts";
+import Chart from "./components/Chart.vue";
 
 export default {
   components: {
     Search,
     Result,
+    Chart,
   },
 
   data() {
@@ -15,191 +16,99 @@ export default {
       baseUrl: "https://api.frankfurter.app/",
       currencies: {},
       data: {
-        up: { amount: null, currency: "EUR" },
-        down: { amount: null, currency: "USD" },
-        result: { small: "up", large: "down" },
+        up: { amount: 0, currency: "EUR" },
+        down: { amount: 0, currency: "USD" },
+        position: "up",
       },
-      dataChart: { from: "", to: "", dates: [], values: [] },
-      timeOut: null,
+      chart: {
+        status: false,
+        changed: false,
+      },
     };
   },
 
   methods: {
-    getChart() {
-      const chart = document.querySelector("#chart");
-      chart.innerHTML = null;
+    /* 
+      viene richiamata la funzione getData in base: 
+        - al tipo di input (number o select)
+        - alla componente da cui parte la ricerca (position up o down)
+        - alla componente precendentemente selezionata (position up o down)
+    */
+    search(value, position, inputNumber) {
+      const prev = this.data.position;
+      const next = position;
+      const notNext = next == "up" ? "down" : "up";
 
-      const options = {
-        colors: ["#fff"],
+      // tutti i casi in cui questa condizione, per cui l'input è di tipo number e le position prev e next sono uguali, è falsa allora la proprietà changed diventa true
+      // nella funzione getData, a fine chiamata axios, il valore di chart status cambia in base a se changed è true o false
+      if (!(inputNumber && prev == next)) this.chart.changed = true;
 
-        x: {
-          show: true,
-          format: "dd MMM",
-          formatter: undefined,
-        },
-        theme: {
-          mode: "dark",
-          palette: "palette9",
-          monochrome: {
-            enabled: true,
-            color: "#ffffff",
-            shadeTo: "light",
-            shadeIntensity: 0.8,
-          },
-        },
-        chart: {
-          height: "auto",
-          type: "area",
-          fontFamily: "Space Grotesk, Arial, sans-serif",
-          redrawOnParentResize: true,
-          offsetX: -5,
-          offsetY: 10,
-          width: "95%",
-        },
-        dataLabels: {
-          enabled: false,
-        },
-        series: [
-          {
-            name: "Series 1",
-            data: this.dataChart.values,
-          },
-        ],
-        fill: {
-          type: "gradient",
-          gradient: {
-            shadeIntensity: 1,
-            opacityFrom: 0.7,
-            opacityTo: 0.9,
-            stops: [0, 90, 100],
-          },
-        },
-        title: {
-          text: `Rapporto fra ${this.dataChart.from} e ${this.dataChart.to} nell'ultimo mese`,
-          align: "center",
-          margin: 60,
-          offsetX: 0,
-          offsetY: 0,
-          floating: true,
-          style: {
-            fontSize: "14px",
-            fontWeight: "bold",
-            fontFamily: "Space Grotesk",
-            color: "#d4d4d4",
-          },
-        },
-        xaxis: {
-          categories: this.dataChart.dates,
-        },
-      };
+      // input number: parte la funzione passando il value dell'input e le currency in base alla posizione nuova
+      if (inputNumber) {
+        this.getData(value, this.data[next].currency, this.data[notNext].currency, next);
+      }
 
-      const chartObj = new ApexCharts(chart, options);
-
-      chartObj.render();
+      // input select in base a se le posizioni sono uguali (posizione nuova) o diverse (posizione precedente)
+      if (!inputNumber) {
+        if (next == prev) {
+          this.getData(this.data[next].amount, value, this.data[notNext].currency, next);
+        } else {
+          this.getData(this.data[prev].amount, this.data[prev].currency, value, prev);
+        }
+      }
     },
 
-    getDataChart(from, to) {
-      if (this.dataChart.from === from) return;
-
-      // let lastMonth = new Date();
-      // lastMonth.setMonth(lastMonth.getMonth() - 1);
-      // lastMonth = lastMonth.toLocaleDateString("us-US");
-      // lastMonth = lastMonth.split("/").reverse();
-      // lastMonth = lastMonth.map((el) => el.padStart(2, "0")).join("-");
-      // const date = lastMonth + "..";
-
-      let lastWeek = new Date();
-      lastWeek.setDate(lastWeek.getDate() - 7);
-      lastWeek = lastWeek.toLocaleDateString("us-US");
-      lastWeek = lastWeek.split("/").reverse();
-      lastWeek = lastWeek.map((el) => el.padStart(2, "0")).join("-");
-      const date = lastWeek + "..";
-
-      axios
-        .get(this.baseUrl + date, { params: { amount: 1, from: from, to: to } })
-        .then((res) => {
-          this.dataChart["from"] = from;
-          this.dataChart["to"] = to;
-
-          this.dataChart.dates = [];
-          this.dataChart.values = [];
-
-          Object.entries(res.data.rates).forEach((el) => {
-            const newDate = new Date(el[0]);
-            const dateFormatted = newDate.toLocaleDateString("it-IT", {
-              month: "short",
-              day: "numeric",
-            });
-
-            this.dataChart.dates.push(dateFormatted);
-            this.dataChart.values.push(el[1][to]);
-          });
-
-          this.getChart();
-        });
-    },
-
-    getCurrencies() {
-      axios.get("https://api.frankfurter.app/currencies").then((res) => {
-        this.currencies = res.data;
-      });
-    },
-
-    getConvertion(amount, from, to, position) {
+    getData(amount, from, to, position) {
       axios
         .get(this.baseUrl + "latest", { params: { amount: amount, from: from, to: to } })
         .then((res) => {
+          // creo due oggetti from e to in base ai valori from e to passati nella chaiamta
           const from = {};
-          const to = {};
-
           from["amount"] = res.data.amount;
           from["currency"] = res.data.base;
 
+          const to = {};
           for (const [key, value] of Object.entries(res.data.rates)) {
             to["amount"] = value;
             to["currency"] = key;
           }
 
-          this.data["up"] = position === "up" ? from : to;
-          this.data["down"] = position === "up" ? to : from;
+          // in base al parametro position viene deciso quale valore assegnare alle proprietà up e down
+          this.data.up = position === "up" ? from : to;
+          this.data.down = position === "up" ? to : from;
 
-          this.data["result"] = {
-            small: position,
-            large: position === "up" ? "down" : "up",
-          };
-          console.log(this.data);
+          this.data.position = position;
+
+          // se il grafico va modificato allora a fine chiamata axios la variabile status cambia valore
+          if (this.chart.changed) {
+            this.chart.status = !this.chart.status;
+            this.chart.changed = false;
+          }
         });
     },
 
-    search(amount, currency, position) {
-      clearTimeout(this.timeOut);
-
-      this.timeOut = setTimeout(() => {
-        if (position === "up") {
-          this.getConvertion(amount, currency, this.data.down.currency, position);
-          this.getDataChart(currency, this.data.down.currency);
-        } else {
-          this.getConvertion(amount, currency, this.data.up.currency, position);
-          this.getDataChart(currency, this.data.up.currency);
-        }
-      }, 300);
+    getCurrencies() {
+      // ottengo la lista di monete da stampare nella select
+      axios.get(this.baseUrl + "currencies").then((res) => {
+        this.currencies = res.data;
+      });
     },
   },
-  created() {
+
+  mounted() {
     this.getCurrencies();
-    this.getConvertion(1, "EUR", "USD", "up");
-    this.getDataChart("EUR", "USD");
+    this.getData(1, "EUR", "USD", "up");
   },
 };
 </script>
 
 <template>
   <div class="my-container">
-    <h1 class="text-center">Currency Converter</h1>
-    <div>
-      <Result :data="this.data" />
-    </div>
-    <div class="d-flex flex-column gap-3">
+    <h1 class="text-center mb-3 mb-md-2">Currency Converter</h1>
+
+    <Result :data="this.data" />
+
+    <div class="d-flex flex-column gap-4 gap-md-3">
       <Search
         v-for="n in ['up', 'down']"
         :position="n"
@@ -209,7 +118,7 @@ export default {
       />
     </div>
 
-    <div id="chart"></div>
+    <Chart :data="this.data" :status="this.chart.status" />
   </div>
 </template>
 
@@ -224,28 +133,13 @@ export default {
   background-color: #252525;
 }
 
-#chart {
-  margin-top: 50px;
-  color: #d4d4d4;
-  display: flex;
-  justify-content: center;
-  background-color: #424242;
-  border-radius: 40px;
-  padding: 20px 0;
-}
-
 @media screen and (max-width: 767px) {
   .my-container {
     width: 100%;
     min-height: 500px;
     border: 0;
     border-radius: 0;
-    padding: 40px 20px;
-  }
-
-  #chart {
-    border-radius: 10px;
-    padding: 15px 0;
+    padding: 20px 20px 50px;
   }
 }
 </style>
