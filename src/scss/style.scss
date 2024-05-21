@@ -1,13 +1,14 @@
 @use 'bootstrap';
 
 body {
-  font-family: "Space Grotesk", sans-serif;
+  font-family: 'Rubik Variable', sans-serif;
   font-optical-sizing: auto;
   font-style: normal;
   min-height: 100vh;
   display: flex;
   flex-direction: column;
 }
+
 
 #app {
   background-color: #191919;
