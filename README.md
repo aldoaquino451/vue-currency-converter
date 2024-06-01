@@ -7,6 +7,8 @@ Currency Converter è una pagina web, compatibile sia con dispositivi mobili che
   <img src="public/screenshot.png" alt="">
 </div>
 
+## Indice
+
 - [Caratteristiche](#caratteristiche)
 - [Tecnologie Utilizzate](#tecnologie-utilizzate)
 - [Installazione](#installazione)
